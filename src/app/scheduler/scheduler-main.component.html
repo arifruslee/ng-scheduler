@@ -1,0 +1,90 @@
+<ng-template #popupEvent let-modal>
+    <div class="modal-header">
+      <h4 class="modal-title" id="modal-basic-title">{{ modifyEventIndex ? "Modify Event" : "Add New Event" }}</h4>
+      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+        <div class="row">
+            <div class="col-lg-6 col-md-12">Event Name: </div>
+            <div class="col-lg-6 col-md-12"><input type="text" [(ngModel)]='popEventName' /></div>
+        </div>
+        <div class="row">
+            <div class="col-lg-6 col-md-12">Event Start Datetime: </div>
+            <div class="col-lg-6 col-md-12"><input type="text" [(ngModel)]='popEventStart' (ngModelChange)="calcDuration()" /></div>
+        </div>
+        <div class="row">
+            <div class="col-lg-6 col-md-12">Event End Datetime: </div>
+            <div class="col-lg-6 col-md-12"><input type="text" [(ngModel)]='popEventEnd' (ngModelChange)="calcDuration()" /></div>
+        </div>
+        <div class="row">
+            <div class="col-lg-6 col-md-12">Event Duration (mins): </div>
+            <div class="col-lg-6 col-md-12"><input type="text" readonly class="form-control-plaintext" [(ngModel)]='popEventDuration' /></div>
+        </div>
+        <div class="row">
+            <div class="col-lg-6 col-md-12">Clip Location: </div>
+            <div class="col-lg-6 col-md-12"><input type="text" [(ngModel)]='popClipLocation' /></div>
+        </div>
+        <div class="row">
+            <div class="col-lg-6 col-md-12">Recording Channel: </div>
+            <div class="col-lg-6 col-md-12"><input type="text" [(ngModel)]='popRecordingChannel' /></div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" (click)="popupOKClick()">OK</button>
+        <button class="btn btn-secondary" (click)="modal.dismiss('Cross click')">Cancel</button>
+    </div>
+</ng-template>
+<div class="card">
+    <div class="card-header">
+        {{title}}
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-lg-3 col-md-12">Bearer Token: <input type="text" [(ngModel)]='bearerToken' /></div>
+            <div class="col-lg-9 col-md-12"></div>
+        </div>
+        <div class="row">
+            <div class="col-lg-3 col-md-12">
+                <button class="btn btn-primary" (click)="open(popupEvent)">Add Event</button>
+            </div>
+            <div class="col-lg-9 col-md-12"></div>
+        </div>
+    </div>
+</div>
+<div class="card" *ngIf='arrayEvents.length'>
+    <div class="card-header">
+        <div class="row">
+            <div class="col-lg-4 col-md-12">Created Events</div>
+            <div class="col-lg-4 col-md-12"><button class="btn btn-secondary" (click)='refreshList()'>Refresh List</button></div>
+            <div class="col-lg-4 col-md-12"></div>
+        </div>        
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+              <thead>
+                  <tr>
+                      <th>Name</th>
+                      <th>Status</th>
+                      <th>Start Date</th>
+                      <th>End Date</th>
+                      <th></th>
+                      <th></th>
+                  </tr>
+              </thead>
+              <tbody>
+                  <tr *ngFor='let eventInfo of arrayEvents;let i=index'>
+                    <td>{{ eventInfo["name:text"] }}</td>
+                    <td>{{ eventInfo["status:enum"] }}</td>
+                    <td>{{ eventInfo["start:dateTime"] | date: 'MM/dd/yyyy HH:mm:ss' }}</td>
+                    <td>{{ eventInfo["end:dateTime"] | date: 'MM/dd/yyyy HH:mm:ss' }}</td>
+                    <td><button class="btn btn-secondary" (click)='deleteClick(eventInfo["event:id"], i)'>Delete</button></td>
+                    <td><button class="btn btn-secondary" (click)='open(popupEvent, i, eventInfo)'>Modify</button></td>
+                  </tr>
+              </tbody>
+            </table>
+        </div>
+    </div>
+</div>
