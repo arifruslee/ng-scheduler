@@ -126,7 +126,10 @@ export class SchedulerMainComponent {
       },
       err=>{
         console.log(err);
-        alert('Unsuccessful Creation. Error: \n' + JSON.stringify(err));
+        if (err.status == 404) //If no shceduled event was created
+          alert('Unsuccessful Add Event, possible event conflict occured. Error: \n\n' + JSON.stringify(err));
+        else
+          alert(JSON.stringify(err));
       })      
     }
 
