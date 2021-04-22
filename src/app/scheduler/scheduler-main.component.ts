@@ -4,6 +4,7 @@ import { ISvcEvent } from '../interface-models/svc-events'
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { DatePipe } from '@angular/common';
 import { APIService } from '../api.service';
+import { map, tap } from "rxjs/operators";
 
 @Component({
     selector: 'sch-schedulers',
@@ -48,6 +49,7 @@ export class SchedulerMainComponent {
         'Authorization': `Bearer ${this.bearerToken}` })).subscribe(res=>{
       console.log(res);
       this.processEventsResult(res);
+      this.modalService.dismissAll('Add Event successful');
      },
      err=>{
        console.log(err);
@@ -76,6 +78,7 @@ export class SchedulerMainComponent {
       console.log(res);
       //Updating the event data from the list
       this.arrayEvents[this.modifyEventIndex ?? 0] = event;
+      this.modalService.dismissAll('Modify Event successful');
      },
      err=>{
        console.log(err);
@@ -104,21 +107,26 @@ export class SchedulerMainComponent {
     processEventsResult(res: ISvcEvent): void {
       let id = res['event:id']!;
       
-      this._APIService.getEvent(id, new HttpHeaders({'Authorization': `Bearer ${this.bearerToken}` })).subscribe(ev => {
+      this._APIService.getEvent(id, new HttpHeaders({'Authorization': `Bearer ${this.bearerToken}` }))
+      .pipe(
+        tap(data => console.log('Ori Data: ', JSON.stringify(data))),
+        map(data => ({        
+          "event:id": data['event:id'] ?? '',
+          "name:text": data['name:text'] ?? '',
+          "status:enum": data['status:enum'] ?? '',
+          "start:dateTime": data['start:dateTime'] ?? '',
+          "end:dateTime": data['end:dateTime'] ?? '',
+          "source": data['source'] ?? '',
+          "folder:id": data['folder:id'] ?? ''        
+        }))
+      )
+      .subscribe(ev => {
         console.log(ev);
-        this.arrayEvents.push({ 
-          "event:id": ev['event:id'] ?? '',
-          "name:text": ev['name:text'] ?? '',
-          "status:enum": ev['status:enum'] ?? '',
-          "start:dateTime": ev['start:dateTime'] ?? '',
-          "end:dateTime": ev['end:dateTime'] ?? '',
-          "source": ev['source'] ?? '',
-          "folder:id": ev['folder:id'] ?? ''
-        });
+        this.arrayEvents.push(ev);
       },
       err=>{
         console.log(err);
-        alert(JSON.stringify(err));
+        alert('Unsuccessful Creation. Error: \n' + JSON.stringify(err));
       })      
     }
 
@@ -132,16 +140,23 @@ export class SchedulerMainComponent {
     refreshList(): void {
       this.arrayEvents.forEach(event =>{
         this._APIService.getEvent(event['event:id'] ?? '', 
-        new HttpHeaders({'Authorization': `Bearer ${this.bearerToken}` })).subscribe(ev => {
-          console.log(ev);
+        new HttpHeaders({'Authorization': `Bearer ${this.bearerToken}` }))
+        .pipe(
+          tap(data => console.log('Ori Data: ', JSON.stringify(data))),
+          map(data => ({
             //Replaces the values as accordingly to the get service
-            event['event:id'] = ev['event:id'] ?? '';
-            event['name:text'] = ev['name:text'] ?? '';
-            event['status:enum'] = ev['status:enum'] ?? '';
-            event['start:dateTime'] = ev['start:dateTime'] ?? '';
-            event['end:dateTime'] = ev['end:dateTime'] ?? '';
-            event['source'] = ev['source'] ?? '';
-            event['folder:id'] = ev['folder:id'] ?? '';
+            [event['event:id']]: data['event:id'] ?? '',
+            [event['name:text']]: data['name:text'] ?? '',
+            [event['status:enum']]: data['status:enum'] ?? '',
+            [event['start:dateTime']]: data['start:dateTime'] ?? '',
+            [event['end:dateTime']]: data['end:dateTime'] ?? '',
+            [event['source']]: data['source'] ?? '',
+            [event['folder:id']]: data['folder:id'] ?? ''
+          }))
+        )
+        .subscribe(ev => {
+          console.log(ev);
+          event = ev;
         },
         err=>{
           console.log(err);
